@@ -41,5 +41,10 @@
   "bugs": {
     "url": "https://github.com/beaudspencer/react-setup/issues"
   },
-  "homepage": "https://github.com/beaudspencer/react-setup#readme"
+  "homepage": "https://github.com/beaudspencer/react-setup#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0"
+  }
 }
