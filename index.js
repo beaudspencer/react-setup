@@ -123,16 +123,10 @@ function gitSetup() {
 
 function serverSetup(mongo) {
   console.log('Installing express')
-  shell.exec('npm install --save express dotenv')
+  shell.exec('npm install --save express')
   console.log('writing express server')
   writeFile('index.js', Buffer.from(mongo ? expressAndMongo : expressOnly))
     .then(console.log('Express server created'))
-    .catch(err => {
-      console.error(err)
-    })
-  console.log('Creating environment file')
-  writeFile('.env', 'PORT=3000')
-    .then(console.log('.env file created'))
     .catch(err => {
       console.error(err)
     })
@@ -212,10 +206,22 @@ function writeWebpackConfig() {
     })
 }
 
+function writeDotenv() {
+  console.log('Installing dotenv...')
+  shell.exec('npm install --save dotenv')
+  console.log('Creating environment file')
+  writeFile('.env', 'PORT=3000')
+    .then(console.log('.env file created'))
+    .catch(err => {
+      console.error(err)
+    })
+}
+
 function createProject(answers) {
   initializePackageJson()
   createReactFiles()
   writeWebpackConfig()
+  writeDotenv()
   answers.github === 'yes' ? gitSetup() : writePackageScripts()
   if (answers.express === 'yes') serverSetup(answers.mongo === 'yes')
   if (answers.material === 'yes') installMaterialCore()
@@ -231,7 +237,7 @@ module.exports = async function runApp() {
     const confirm = await review(config)
     correct = confirm.correct
   } while (correct === 'no')
-  await createProject(config)
+  createProject(config)
   console.log(chalk.green(
     figlet.textSync('Happy Coding!', {
       font: 'Big',
