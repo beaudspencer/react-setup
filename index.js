@@ -78,18 +78,67 @@ function review(answers) {
   return inquirer.prompt(confirm)
 }
 
-function createProject(answers) {
-  console.log('Creating package.json file')
-  shell.exec('npm init -y')
-  console.log('Writing npm config file...')
-  writeFile('.npmrc', Buffer.from(npmrc))
-    .then(console.log('npmrc setup!'))
-  console.log('Installing react dependencies...')
-  shell.exec('npm install --save react react-dom')
-  console.log('Installing necessary dev dependencies...')
-  shell.exec(
-    'npm install -D @babel/core @babel/preset-react babel-loader copy-webpack-plugin npm-run-all webpack webpack-cli webpack-dev-server nodemon'
-  )
+function gitSetup() {
+  console.log('Installing linter packages for github...')
+  shell.exec('npm install -D eslint babel-eslint eslint-config-standard eslint-plugin-import eslint-plugin-node eslint-plugin-promise eslint-plugin-react eslint-plugin-standard')
+  shell.exec('npm install -D htmlhint husky lint-staged stylelint stylelint-config-standard')
+  console.log('Setting up linters for GitHub...')
+  writeFile('.eslintrc', Buffer.from(eslint))
+    .then(writeFile('.gitignore', Buffer.from(gitignore)))
+    .then(writeFile('.htmlhintrc', Buffer.from(htmlhintrc)))
+    .then(writeFile('.stylelintrc', Buffer.from(stylelintrc)))
+    .then(console.log('GitHub and linter files created!'))
+    .catch(err => {
+      console.error(err)
+    })
+  console.log('Setting up linter hooks...')
+  const pj = fs.readFileSync('package.json', 'utf8')
+  const config = JSON.parse(pj)
+  config['husky'] = {
+    'hooks': {
+      'pre-commit': 'lint-staged'
+    }
+  }
+  config['lint-staged'] = {
+    '*.html': [
+      'htmlhint'
+    ],
+    '*.css': [
+      'stylelint --fix',
+      'git add'
+    ],
+    '*.{js,jsx}': [
+      'eslint --fix',
+      'git add'
+    ]
+  }
+  config['scripts'] = {
+    'start': 'nodemon index.js',
+    'build': 'webpack',
+    'dev': 'webpack-dev-server',
+    'watch': 'npm-run-all --parallel start dev'
+  }
+  fs.writeFileSync('package.json', JSON.stringify(config, null, 2))
+}
+
+function serverSetup(mongo) {
+  console.log('Installing express')
+  shell.exec('npm install --save express dotenv')
+  console.log('writing express server')
+  writeFile('index.js', Buffer.from(mongo ? expressAndMongo : expressOnly))
+    .then(console.log('Express server created'))
+    .catch(err => {
+      console.error(err)
+    })
+  console.log('Creating environment file')
+  writeFile('.env', 'PORT=3000')
+    .then(console.log('.env file created'))
+    .catch(err => {
+      console.error(err)
+    })
+}
+
+function createReactFiles() {
   console.log('Creating src directory and files...')
   fs.mkdir('src', (err) => {
     if (err) console.error(err)
@@ -103,66 +152,33 @@ function createProject(answers) {
         })
     }
   })
-  if (answers.github === 'yes') {
-    console.log('Installing linter packages for github...')
-    shell.exec('npm install -D babel-eslint eslint-config-standard eslint-plugin-import eslint-plugin-node eslint-plugin-promise eslint-plugin-react eslint-plugin-standard')
-    shell.exec('npm install -D htmlhint husky lint-staged stylelint stylelint-config-standard')
-    console.log('Setting up linters for GitHub...')
-    writeFile('.eslintrc', Buffer.from(eslint))
-      .then(writeFile('.gitignore', Buffer.from(gitignore)))
-      .then(writeFile('.htmlhintrc', Buffer.from(htmlhintrc)))
-      .then(writeFile('.stylelintrc', Buffer.from(stylelintrc)))
-      .then(console.log('GitHub and linter files created!'))
-      .catch(err => {
-        console.error(err)
-      })
-    console.log('Setting up linter hooks...')
-    const pj = fs.readFileSync('package.json', 'utf8')
-    const config = JSON.parse(pj)
-    config['husky'] = {
-      'hooks': {
-        'pre-commit': 'lint-staged'
-      }
-    }
-    config['lint-staged'] = {
-      '*.html': [
-        'htmlhint'
-      ],
-      '*.css': [
-        'stylelint --fix',
-        'git add'
-      ],
-      '*.{js,jsx}': [
-        'eslint --fix',
-        'git add'
-      ]
-    }
-    fs.writeFileSync('package.json', JSON.stringify(config, null, 2))
-  }
-  if (answers.express === 'yes') {
-    console.log('Installing express')
-    shell.exec('npm install --save express')
-    console.log('writing express server')
-    writeFile('index.js', Buffer.from(answers.mongodb === 'yes' ? expressAndMongo : expressOnly))
-      .then(console.log('Express server created'))
-      .catch(err => {
-        console.error(err)
-      })
-    console.log('Creating environment file')
-    writeFile('.env', 'PORT=3000')
-      .then(console.log('.env file created'))
-      .catch(err => {
-        console.error(err)
-      })
-  }
-  if (answers.material === 'yes') {
-    console.log('Installing Material-UI')
-    shell.exec('npm install --save @material-ui/core')
-  }
-  if (answers.icons === 'yes') {
-    console.log('Installing Material icons')
-    shell.exec('npm install @material-ui/icons')
-  }
+}
+
+function initializePackageJson() {
+  console.log('Creating package.json file')
+  shell.exec('npm init -y')
+  console.log('Writing npm config file...')
+  writeFile('.npmrc', Buffer.from(npmrc))
+    .then(console.log('npmrc setup!'))
+  console.log('Installing react dependencies...')
+  shell.exec('npm install --save react react-dom')
+  console.log('Installing necessary dev dependencies...')
+  shell.exec(
+    'npm install -D @babel/core @babel/preset-react babel-loader copy-webpack-plugin npm-run-all webpack webpack-cli webpack-dev-server nodemon'
+  )
+}
+
+function installMaterialCore() {
+  console.log('Installing Material-UI')
+  shell.exec('npm install --save @material-ui/core')
+}
+
+function installMaterialIcons() {
+  console.log('Installing Material icons')
+  shell.exec('npm install @material-ui/icons')
+}
+
+function writePackageScripts() {
   console.log('Writing run scripts to package.json')
   fs.readFile('package.json', 'utf8', (err, data) => {
     if (err) console.error(err)
@@ -182,6 +198,9 @@ function createProject(answers) {
         console.error(err)
       })
   })
+}
+
+function writeWebpackConfig() {
   console.log('Writing webpack config file...')
   writeFile('webpack.config.js', Buffer.from(webpack))
     .then((err) => {
@@ -193,6 +212,16 @@ function createProject(answers) {
     })
 }
 
+function createProject(answers) {
+  initializePackageJson()
+  createReactFiles()
+  writeWebpackConfig()
+  answers.github === 'yes' ? gitSetup() : writePackageScripts()
+  if (answers.express === 'yes') serverSetup(answers.mongo === 'yes')
+  if (answers.material === 'yes') installMaterialCore()
+  if (answers.icons === 'yes') installMaterialIcons()
+}
+
 module.exports = async function runApp() {
   figletStart()
   let config
@@ -202,9 +231,9 @@ module.exports = async function runApp() {
     const confirm = await review(config)
     correct = confirm.correct
   } while (correct === 'no')
-  createProject(config)
+  await createProject(config)
   console.log(chalk.green(
-    figlet.textSync('All Done!', {
+    figlet.textSync('Happy Coding!', {
       font: 'Big',
       horizontalLayout: 'default',
       verticalLayout: 'default'
