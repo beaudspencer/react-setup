@@ -4,14 +4,7 @@
   "description": "A react toolkit for jumpstarting an application",
   "main": "index.js",
   "engines": {
-    "node": "10.0.0"
-  },
-  "scripts": {
-    "start": "node index.js",
-    "build": "webpack",
-    "dev": "webpack-dev-server",
-    "watch": "npm-run-all --parallel start dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "node": ">=8"
   },
   "repository": {
     "type": "git",
@@ -20,8 +13,51 @@
   "keywords": [
     "react"
   ],
+  "bin": {
+    "setup": "bin/setup"
+  },
   "author": "beaudspencer",
   "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-react": "^7.0.0",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.5",
+    "copy-webpack-plugin": "^4.6.0",
+    "eslint": "5.3.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-react": "^7.12.3",
+    "eslint-plugin-standard": "^3.1.0",
+    "husky": "^1.3.1",
+    "lint-staged": "^7.3.0",
+    "nodemon": "^1.18.9",
+    "npm-run-all": "^4.1.5",
+    "stylelint": "^9.9.0",
+    "stylelint-config-standard": "^18.2.0",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
+  },
+  "bugs": {
+    "url": "https://github.com/beaudspencer/react-setup/issues"
+  },
+  "preferGlobal": true,
+  "homepage": "https://github.com/beaudspencer/react-setup#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "figlet": "^1.2.1",
+    "inquirer": "^6.2.1",
+    "shelljs": "^0.8.3"
+  },
+  "scripts": {
+    "start": "nodemon index.js",
+    "build": "webpack",
+    "dev": "webpack-dev-server",
+    "watch": "npm-run-all --parallel start dev"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -39,38 +75,5 @@
       "eslint --fix",
       "git add"
     ]
-  },
-  "devDependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/preset-react": "^7.0.0",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.4",
-    "copy-webpack-plugin": "^4.5.4",
-    "eslint": "5.3.0",
-    "eslint-config-standard": "11.0.0",
-    "eslint-plugin-import": "2.13.0",
-    "eslint-plugin-node": "7.0.1",
-    "eslint-plugin-promise": "3.8.0",
-    "eslint-plugin-react": "7.10.0",
-    "eslint-plugin-standard": "3.1.0",
-    "htmlhint": "0.9.13",
-    "husky": "1.0.0-rc.13",
-    "lint-staged": "7.2.2",
-    "npm-run-all": "^4.1.3",
-    "stylelint": "9.4.0",
-    "stylelint-config-standard": "^18.2.0",
-    "webpack": "^4.22.0",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.9"
-  },
-  "bugs": {
-    "url": "https://github.com/beaudspencer/react-setup/issues"
-  },
-  "homepage": "https://github.com/beaudspencer/react-setup#readme",
-  "dependencies": {
-    "dotenv": "^6.2.0",
-    "express": "^4.16.4",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0"
   }
 }
